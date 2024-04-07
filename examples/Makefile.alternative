@@ -1,0 +1,64 @@
+# source: https://twitter.com/Lucrecious_/status/1776868747220775367
+# author: Luca @Lucrecious_ / https://github.com/Lucrecious
+
+warning_flags = -Wall -Wextra -pedantic
+osx_flags = -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL
+
+raylib_flags = -lm -lraylib
+raylib_headers = raylib/src
+raylib_libs = raylib/src
+
+cimgui_libs = cimgui
+cimgui_headers = cimgui
+cimgui_flags = -lcimgui
+
+rlimgui_libs = rlImGui
+rlimgui_headers = rlImGui
+rlimgui_flags = -lrlImGui
+
+CCFLAGS = $(warning_flags)
+
+ifeq ($(OS),WINDOWS_NT)
+else
+	UNAME_S := $(shell uname -s)
+	ifeq ($(UNAME_S),Darwin)
+		CCFLAGS += $(osx_flags)
+	endif
+endif
+
+CCFLAGS += -L$(raylib_libs)
+CCFLAGS += -I$(raylib_headers)
+CCFLAGS += $(raylib_flags)
+
+CCFLAGS += -L$(cimgui_libs)
+CCFLAGS += -I$(cimgui_headers)
+CCFLAGS += $(cimgui_flags)
+
+CCFLAGS += -L$(rlimgui_libs)
+CCFLAGS += -I$(rlimgui_headers)
+CCFLAGS += $(rlimgui_flags)
+
+CCFLAGS += -lstdc++
+
+SRC = src/game.c
+
+# for rebuild purposes
+SRC_DEP = src/some_file.h
+
+EXE = project
+
+project: $(SRC) $(SRC_DEP) $(raylib_libs)/libraylib.a $(cimgui_libs)/libcimgui.a $(rlimgui_libs)/librlImGui.a
+	cc $(SRC) -o $(EXE) $(CCFLAGS)
+
+$(raylib_libs)/libraylib.a:
+	cd raylib/src && $(MAKE) 
+
+$(cimgui_libs)/libcimgui.a:
+	cd cimgui && $(MAKE) CXXFLAGS='-std=c++11 -DIMGUI_DISABLE_OBSOLETE_KEYIO=1' static    
+# $(cimgui_libs)/libcimgui.a:
+# 	cd cimgui && $(MAKE) CXXFLAGS='-std=c++11' static
+
+rlImGui_build_o_cmd = g++ -c rlImGui.cpp -o rlImGui.o -I../raylib/src -I../cimgui/imgui -std=c++11
+rlImGui_build_static_cmd = ar -rc librlImGui.a rlImGui.o
+$(rlimgui_libs)/librlImGui.a:
+	cd rlImGui && $(rlImGui_build_o_cmd) && $(rlImGui_build_static_cmd)
