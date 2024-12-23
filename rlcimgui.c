@@ -298,12 +298,12 @@ static MouseCursor ImGuiCursorToRaylib(ImGuiMouseCursor cursor)
     };
 }
 
-static const char* GetClipTextCallback(void*) 
+static const char* GetClipTextCallback() 
 {
     return GetClipboardText();
 }
 
-static void SetClipTextCallback(void*, const char* text)
+static void SetClipTextCallback(const char* text)
 {
     SetClipboardText(text);
 }
@@ -466,16 +466,17 @@ static void SetupGlobals(void)
 void SetupBackend(void)
 {
     ImGuiIO* io = igGetIO();
+    ImGuiPlatformIO *pio = igGetPlatformIO();
 	io->BackendPlatformName = "imgui_impl_raylib";
 
 	io->BackendFlags |= ImGuiBackendFlags_HasMouseCursors | ImGuiBackendFlags_HasGamepad | ImGuiBackendFlags_HasSetMousePos;
 
 	io->MousePos = (ImVec2){0, 0};
 
-	io->SetClipboardTextFn = SetClipTextCallback;
-	io->GetClipboardTextFn = GetClipTextCallback;
+	pio->Platform_SetClipboardTextFn = SetClipTextCallback;
+	pio->Platform_GetClipboardTextFn = GetClipTextCallback;
 
-	io->ClipboardUserData = NULL;
+	pio->Platform_ClipboardUserData = NULL;
 }
 
 void rligSetupFontAwesome(void)
